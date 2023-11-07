@@ -1,0 +1,171 @@
+---
+title: 'Day1: Data visualization basics'
+author: "Wenbin Guo"
+date: "2023-11-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Beginning remarks
+Hello everyone, and a warm welcome to the QCBio workshop W28: "Advanced Data Visualization with ggplot2". In this workshop, we will be centered around learning the grammar and syntax of ggplot2. Our goal is to deepen your understanding and skills with ggplot2, enabling you to craft and tailor plots with desired properties. We’ll try to tackle some practical data wrangling and visualization challenges and it's our sincere hope that the expertise you gain here today will be useful in tackling the unique challenges presented by your research in the future
+
+We'll also cover essential principles of data visualization and highlight some common pitfalls to avoid, equipping you with the knowledge to present your data effectively and attractively. By the end of this workshop, you should be able to elevate your data stories to new heights. Let's get started on this visual exploration journey together!
+
+## goals
+For today's workshop practice, we will cover the following topics
+- environment setup (install packages)
+- data wrangling skills
+- getting started with `ggplot()`
+
+
+## Rmarkdown shortcuts:
+- Ctrl/Cmd + Alt + i: insert a code chunk
+- Ctrl/Cmd + Shift + c: comment/uncomment the code
+
+For more information about the Rmarkdown usage, please refer to the following reference:
+- [cheatsheet](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
+- [R markdown cookbook](https://bookdown.org/yihui/rmarkdown-cookbook/)
+- [keyboard shortcuts](https://bookdown.org/yihui/rmarkdown-cookbook/rstudio-shortcuts.html)
+
+
+# environment setup
+install and load the necessary 
+```{r}
+# install/load necessary package and data
+if(!require(tidyverse)){
+  install.packages("tidyverse")
+}
+
+library(tidyverse)
+```
+
+
+# data wrangling basics
+## data type
+### variables
+```{r}
+x = c("apple", "banana") 
+y = c("low", "medium", "high")
+z = c(0.05, 1, -2)
+```
+
+#### create factors
+check the results of following 2 lines about factors, what do you find?
+```{r}
+y1 = factor(y)
+y2 = factor(y, levels = c("low", "medium", "high"))
+```
+
+
+### data frame
+check the contents of dataset `mpg` in the tidyverse package
+```{r}
+# load mpg
+data(mpg)
+
+# check the first several lines
+head(mpg)
+```
+
+#### create a new data frame
+```{r}
+df = data.frame(x = c(1,2,3), y = c("low", "medium", "high"))
+
+head(df)
+```
+
+
+## Manipulate observations
+### filter
+Filtering is useful for extracting outliers or remove abnormal data points (such as missing values). Filtering is also a useful trick when we dealing with big dataset. By filtering, we can explore a small part of the data before we scale up and generalize to all the dataset. This could save a lot of time when building the prototype of processing and visualization pipeline 
+
+```{r}
+filter(mpg, model == "a4")
+```
+
+
+### arrange
+```{r}
+arrange(mpg, hwy)
+```
+
+
+Exercise: extract observations whose manufacturer is `audi` or `ford`, filter by `cty > 18` , and then arrange the data frame by `cty` in descending order
+
+
+### merge by rows
+use `bind_rows()` to merge 2 dataframe by rows
+```{r}
+mpg_df1 = filter(mpg, manufacturer == "audi")
+mpg_df2 = filter(mpg, manufacturer == "ford")
+
+bind_rows(mpg_df1, mpg_df2)
+```
+
+
+
+## Manipulate columns
+### select
+```{r}
+mpg_df3 = select(mpg, manufacturer, model, year, displ)
+mpg_df4 = select(mpg, manufacturer, model, year, hwy, cty)
+
+mpg_df3
+mpg_df4
+```
+
+
+### mutate
+```{r}
+# get a ratio of hwy, cty
+mutate(mpg_df4, ratio = hwy/cty)
+```
+
+
+### merge by columns
+ExerciseTry to use `inner_join()`, `outer_join()`, `left_join()`, `right_join()` to merge `mpg_df3` and `mpg_df4` by columns
+
+
+
+## reshape data
+convert the data to long/wide format using function `pivot_longer()` and `pivot_wider()`in tidyr
+```{r}
+mpg_df4_long = pivot_longer(mpg_df4, cols = c("hwy", "cty"), names_to = "type", values_to = "mile_per_gallon")
+mpg_df4_long
+```
+
+Exercise, try to convert the `mpg_df4_long` to the wide format
+
+
+## summarize the data by groups 
+use pipe to chain the functions
+```{r}
+mpg %>% group_by(year, manufacturer) %>% 
+  summarise(hwy_mean = mean(hwy), cty_mean = mean(cty))
+```
+
+
+# Getting start with ggplot
+## build ggplot layer by layer
+```{r}
+base = ggplot(mpg, aes(hwy, displ))
+```
+
+we can use `$` to check what's inside the base (ggplot object)
+```{r}
+print(names(base))
+```
+
+
+```{r}
+base
+base + geom_point()
+base + geom_point(aes(colour = drv))
+base + geom_point(aes(colour = drv)) + geom_smooth(method = "lm") 
+base + geom_point(aes(colour = drv)) + geom_smooth(method = "lm") + theme_minimal()
+```
+
