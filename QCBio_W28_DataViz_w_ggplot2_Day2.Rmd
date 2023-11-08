@@ -1,0 +1,300 @@
+---
+title: 'Day2: Building a plot layer by layer'
+author: "Wenbin Guo"
+date: "2023-11-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Beginning remarks
+## goals
+For today's workshop session, we'll engage in exercises designed to deepen our understanding and proficiency in the following parts:
+- Exploring aesthetic mappings 
+- Delving into geometric concepts to strengthen the foundation of our design approach.
+- Learning to use of scale to set customized color
+- Utilizing facets effectively to display data
+- Navigating the coordinate system
+
+These practices aim to refine our skills and enrich our overall learning experience.
+
+# load library
+```{r}
+library(tidyverse)
+
+data(mpg)
+head(mpg)
+```
+
+The meaning of the variables
+- `cty` and `hwy` record miles per gallon (mpg) for city and highway driving.
+- `displ` is the engine displacement in litres.
+- `drv` is the drivetrain: front wheel (f), rear wheel (r) or four wheel (4).
+- `model` is the model of car. There are 38 models.
+- `class` is a categorical variable describing the type of car: two seater, SUV, compact, etc.
+
+
+# aesthetics
+## aesthetics mapping
+```{r}
+base = ggplot(data = mpg)
+base + geom_point(aes(x = displ, y = hwy, color = drv))
+base + geom_point(aes(x = displ, y = hwy, size  = drv))
+base + geom_point(aes(x = displ, y = hwy, alpha = drv))
+base + geom_point(aes(x = displ, y = hwy, shape = drv))
+```
+
+
+
+## aesthetics mapping vs setting
+```{r}
+base + geom_point(aes(x = displ, y = hwy, color = "blue"))
+base + geom_point(aes(x = displ, y = hwy),color = "blue")
+```
+
+
+# geometry
+## single variable
+### bar plot
+```{r}
+base + geom_bar(aes(x = class))
+```
+
+Exercise 1: plot the barplot in ascending order (bar height increases from left to right)
+Exercise 2: plot the barplot for each class where bar height is the mean of hwy of each group
+
+
+
+### histogram
+```{r}
+base + geom_histogram(aes(x = hwy))
+base + geom_histogram(aes(x = hwy), binwidth = 5)
+```
+
+
+### freqpoly
+```{r}
+base + geom_freqpoly(aes(x = hwy))
+```
+
+
+### density
+```{r}
+base + geom_density(aes(x = hwy))
+```
+
+
+### dotplot
+```{r}
+base + geom_dotplot(aes(x = hwy))
+```
+
+## two variables
+### scatter plot
+```{r}
+base + geom_point(aes(x = displ, y =hwy))
+```
+
+### smooth 
+```{r}
+base + 
+  geom_point(aes(x = displ, y =hwy)) + 
+  geom_smooth(aes(x = displ, y =hwy), method = "lm")
+
+base + 
+  geom_point(aes(x = displ, y =hwy)) + 
+  geom_smooth(aes(x = displ, y =hwy), method = "loess")
+
+base + 
+  geom_point(aes(x = displ, y =hwy)) + 
+  geom_smooth(aes(x = displ, y =hwy), method = "loess") +
+  geom_rug(aes(x = displ, y =hwy))
+```
+
+### barplot
+```{r}
+base + 
+  geom_bar(aes(x = drv, y =hwy), stat = "identity")
+```
+
+### boxplot
+```{r}
+ggplot(mpg) +
+  geom_boxplot(aes(x = drv, y = hwy)) 
+```
+
+### violin plot
+```{r}
+ggplot(mpg) +
+  geom_violin(aes(x = drv, y = hwy))
+```
+
+### jitter
+```{r}
+ggplot(mpg) +
+  geom_point(aes(x = drv, y = hwy)) +
+  geom_boxplot(aes(x = drv, y = hwy))
+
+ggplot(mpg) +
+  geom_point(aes(x = drv, y = hwy), position = "jitter") +
+  geom_boxplot(aes(x = drv, y = hwy))
+```
+
+### 2d density
+```{r}
+ggplot(mpg) +
+  geom_hex(aes(x = displ, y = hwy)) 
+```
+
+
+### error bar and point range
+```{r}
+y <- c(18, 11, 16)
+df <- data.frame(x = 1:3, y = y, se = c(1.2, 0.5, 1.0))
+
+base <- ggplot(df, aes(x, y, ymin = y - se, ymax = y + se))
+base + geom_crossbar()
+base + geom_pointrange()
+```
+
+
+### heatmap (using geom_tile)
+```{r}
+ht_data  = expand.grid(X = 1:10, Y = 1:10)
+ht_data$Value = runif(100, min = 1, max = 100)
+
+ggplot(ht_data) + 
+  geom_tile(aes(x = X, y = Y, fill = Value))
+```
+
+Note: this is just a demo of using ggplot2 to generate heatmap. Package `pheatmap`, `complexHeatmap`, `ggheatmap` might be more suitable for this task
+
+
+# scale
+Exercise: make the following boxplot to have color "red", "blue", "green"
+```{r}
+ggplot(mpg) +
+  geom_point(aes(x = drv, y = hwy), position = "jitter") +
+  geom_boxplot(aes(x = drv, y = hwy))
+```
+
+
+# facet
+```{r}
+base = ggplot(data = mpg)
+base + geom_point(aes(displ, hwy, colour = drv)) + facet_null()
+
+base + geom_point(aes(displ, hwy, colour = drv)) + facet_wrap(~class)
+
+base + geom_point(aes(displ, hwy, colour = drv)) + facet_wrap(~class, scales = "free_x")
+
+base + geom_point(aes(displ, hwy, colour = drv)) + facet_grid(year~class, scales = "free")
+```
+
+### facet with missing
+```{r}
+df1 <- data.frame(x = 1:3, y = 1:3, gender = c("f", "f", "m"))
+df2 <- data.frame(x = 2, y = 2)
+
+ggplot(df1, aes(x, y)) + 
+  geom_point(data = df2, colour = "red", size = 2) + 
+  geom_point() + 
+  facet_wrap(~gender)
+```
+
+
+
+# coordinates
+## linear
+### zoom in
+```{r}
+base <- ggplot(mpg, aes(displ, hwy)) + 
+  geom_point() + 
+  geom_smooth()
+```
+
+```{r}
+base + scale_x_continuous(limits = c(4, 6))
+```
+
+```{r}
+base + coord_cartesian(xlim = c(4, 6))
+```
+
+
+### flipping axes
+```{r}
+ggplot(mpg, aes(displ, cty)) + 
+  geom_point() + 
+  geom_smooth()
+
+ggplot(mpg, aes(cty, displ)) + 
+  geom_point() + 
+  geom_smooth()
+
+ggplot(mpg, aes(displ, cty)) + 
+  geom_point() + 
+  geom_smooth() + 
+  coord_flip()
+```
+
+### fixed ratio
+```{r}
+ggplot(mpg, aes(displ, cty)) + 
+  geom_point() + 
+  geom_smooth() 
+
+ggplot(mpg, aes(displ, cty)) + 
+  geom_point() + 
+  geom_smooth() +
+  coord_fixed(ratio = 0.2)
+```
+
+
+
+## nonlinear
+### transofmration
+```{r}
+base <- ggplot(diamonds, aes(carat, price)) + 
+  stat_bin2d() + 
+  geom_smooth(method = "lm") + 
+  xlab(NULL) + 
+  ylab(NULL) + 
+  theme(legend.position = "none")
+base
+
+# Better fit on log scale, but harder to interpret
+base +
+  scale_x_log10() + 
+  scale_y_log10()
+
+# Fit on log scale, then backtransform to original.
+# Highlights lack of expensive diamonds with large carats
+pow10 <- scales::exp_trans(10)
+base +
+  scale_x_log10() + 
+  scale_y_log10() + 
+  coord_trans(x = pow10, y = pow10)
+```
+
+### polar coordinates
+```{r}
+base <- ggplot(mtcars, aes(factor(1), fill = factor(cyl))) +
+  geom_bar(width = 1) + 
+  theme(legend.position = "none") + 
+  scale_x_discrete(NULL, expand = c(0, 0)) +
+  scale_y_continuous(NULL, expand = c(0, 0))
+
+# Stacked barchart
+base
+
+# Pie chart
+base + coord_polar(theta = "y")
+
+# The bullseye chart
+base + coord_polar()
+```
+
