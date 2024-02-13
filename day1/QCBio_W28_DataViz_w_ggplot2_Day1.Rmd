@@ -1,7 +1,7 @@
 ---
 title: 'Day1: Data visualization basics'
 author: "Wenbin Guo"
-date: "2023-11-03"
+date: "2024-02-13"
 output: html_document
 ---
 
@@ -9,20 +9,32 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Hello everyone, welcome to the `QCBio workshop W28: "Advanced Data Visualization with ggplot2"`
 
-# Beginning remarks
-Hello everyone, and a warm welcome to the QCBio workshop W28: "Advanced Data Visualization with ggplot2". In this workshop, we will be centered around learning the grammar and syntax of ggplot2. Our goal is to deepen your understanding and skills with ggplot2, enabling you to craft and tailor plots with desired properties. We’ll try to tackle some practical data wrangling and visualization challenges and it's our sincere hope that the expertise you gain here today will be useful in tackling the unique challenges presented by your research in the future
+# Beginning Remarks
+In today’s fast-paced research environment, the ability to communicate complex data effectively is invaluable. ggplot2, a powerful package in R, stands out for its versatility and capacity to create aesthetically pleasing and complex visualizations with ease. This workshop is designed to help you enhance data visualization skills using ggplot2 and enabling you to craft and tailor plots that effectively communicate your research findings.
 
-We'll also cover essential principles of data visualization and highlight some common pitfalls to avoid, equipping you with the knowledge to present your data effectively and attractively. By the end of this workshop, you should be able to elevate your data stories to new heights. Let's get started on this visual exploration journey together!
+## Workshop Goals
 
-## goals
+Our goals for this workshop are threefold:
+
+1. **Deepen Understanding and Skills with ggplot2:** In this workshop, we aim to provide you a deep understanding of ggplot2's grammar and syntax, empowering you to leverage its full potential to create visually appealing and informative graphics.
+2. **Address Data Wrangling and Visualization Challenges:** Through practical exercise, we’ll tackle some data wrangling and visualization challenges. We hope the expertise you gained in this workshop can be readily applied to the unique challenges presented by your research.
+3. **Learn Principles of Effective Data Visualization:** We'll explore critical data visualization principles and strategies to evade typical errors, providing you with the tools to showcase your data compellingly and attractively.
+
+
+Upon completing this workshop, you should be well-equipped to present your data in a more comprehensible and compelling way. Let's embark on this visual exploration journey together and discover how to bring your data to life in new and exciting ways!
+
+
+## Day1 outline
 For today's workshop practice, we will cover the following topics
-- environment setup (install packages)
-- data wrangling skills
-- getting started with `ggplot()`
+- Environment setup (install packages)
+- Getting started with `ggplot()`
+- Data wrangling skills
+- Aesthetic mappings
 
 
-## Rmarkdown shortcuts:
+## Tips on Rmarkdown usage in Rstudio:
 - Ctrl/Cmd + Alt + i: insert a code chunk
 - Ctrl/Cmd + Shift + c: comment/uncomment the code
 
@@ -32,10 +44,10 @@ For more information about the Rmarkdown usage, please refer to the following re
 - [keyboard shortcuts](https://bookdown.org/yihui/rmarkdown-cookbook/rstudio-shortcuts.html)
 
 
-# environment setup
-install and load the necessary 
+# Environment setup
+install and load the necessary package
 ```{r}
-# install/load necessary package and data
+# install/load package
 if(!require(tidyverse)){
   install.packages("tidyverse")
 }
@@ -44,25 +56,9 @@ library(tidyverse)
 ```
 
 
-# data wrangling basics
-## data type
-### variables
-```{r}
-x = c("apple", "banana") 
-y = c("low", "medium", "high")
-z = c(0.05, 1, -2)
-```
-
-#### create factors
-check the results of following 2 lines about factors, what do you find?
-```{r}
-y1 = factor(y)
-y2 = factor(y, levels = c("low", "medium", "high"))
-```
-
-
-### data frame
-check the contents of dataset `mpg` in the tidyverse package
+# Getting started with ggplot2
+## load data mpg
+Fuel economy data from 1999 to 2008 for 38 popular models of cars. 
 ```{r}
 # load mpg
 data(mpg)
@@ -71,30 +67,114 @@ data(mpg)
 head(mpg)
 ```
 
-#### create a new data frame
+meaning of variables:
+- `cty` and `hwy` record miles per gallon (mpg) for city and highway driving.
+- `displ` is the engine displacement in liters.
+- `drv` is the drivetrain: front wheel (f), rear wheel (r) or four wheel (a).
+- `model` is the model of car. 
+- `class` is a categorical variable describing the type of car: two seater, SUV, compact, etc.
+
+
+
+## build basic ggplot object
+```{r}
+base = ggplot(mpg, aes(hwy, displ))
+base
+```
+
+we can use `$` to check what's inside the base (ggplot object)
+```{r}
+print(names(base))
+```
+
+
+## modify plots iteratively
+```{r}
+base + 
+  geom_point()
+```
+
+```{r}
+base + 
+  geom_point(aes(colour = drv)) 
+```
+
+```{r}
+base + 
+  geom_point(aes(colour = drv)) + 
+  geom_smooth(method = "lm") 
+```
+
+
+```{r}
+base + 
+  geom_point(aes(colour = drv)) + 
+  geom_smooth(method = "lm") + 
+  theme_minimal() 
+```
+
+```{r}
+base + 
+  geom_point(aes(colour = drv)) + 
+  geom_smooth(method = "lm") + 
+  theme_minimal() + 
+  ggtitle("Relationship between variables in mpg dataset", subtitle = "hwy vs displ")
+```
+
+note: to add the black border line around the plot, add:
+> + theme(plot.background = element_rect(color = "black", linewidth = 1.5))
+
+
+# Data wrangling basics
+## variables
+### variable types
+```{r}
+x = c(0, 1.5, -2)
+y = c("low", "medium", "high")
+```
+
+### factors
+check the results of following 2 lines about factors, what do you find?
+```{r}
+y1 = factor(y)
+y2 = factor(y, levels = c("low", "medium", "high"))
+```
+
+
+## data frame
+the `mpg` dataset is a typical example of data frame
+
+### create a new data frame
 ```{r}
 df = data.frame(x = c(1,2,3), y = c("low", "medium", "high"))
+df2= data.frame(x = c(1,2,3), y0 = c("apple", "banana", "organge"))
 
 head(df)
 ```
 
-
 ## Manipulate observations
 ### filter
-Filtering is useful for extracting outliers or remove abnormal data points (such as missing values). Filtering is also a useful trick when we dealing with big dataset. By filtering, we can explore a small part of the data before we scale up and generalize to all the dataset. This could save a lot of time when building the prototype of processing and visualization pipeline 
+Filtering is useful for extracting outliers or remove abnormal data points (such as missing values). 
+
+Filtering is also a useful trick when we dealing with big datasets. By filtering, we can explore a small part of the data before we scale up to the whole dataset. This could save us time when building the prototype of processing and visualization pipeline 
 
 ```{r}
+# singlecomparison operators
 filter(mpg, model == "a4")
+
+# with logical operators (compound condition)
+filter(mpg, model == "a4" & cyl==4)
 ```
 
 
 ### arrange
 ```{r}
+# default ascending
 arrange(mpg, hwy)
+
+# descending
+arrange(mpg, desc(hwy))
 ```
-
-
-Exercise: extract observations whose manufacturer is `audi` or `ford`, filter by `cty > 18` , and then arrange the data frame by `cty` in descending order
 
 
 ### merge by rows
@@ -107,8 +187,14 @@ bind_rows(mpg_df1, mpg_df2)
 ```
 
 
+**Exercise**: extract observations whose `cty` value is among the top 10
 
-## Manipulate columns
+**Exercise**: extract observations whose manufacturer is `audi` or `ford`, filter by `cty > 18` , and then arrange the resulting data frame by `cty` in descending order
+
+**Exercise**: run `bind_rows(df,df2)`, what would you find?
+
+
+## Manipulate variables
 ### select
 ```{r}
 mpg_df3 = select(mpg, manufacturer, model, year, displ)
@@ -127,11 +213,11 @@ mutate(mpg_df4, ratio = hwy/cty)
 
 
 ### merge by columns
-ExerciseTry to use `inner_join()`, `outer_join()`, `left_join()`, `right_join()` to merge `mpg_df3` and `mpg_df4` by columns
+**Exercise** Try to use `inner_join()`, `full_join()`, `left_join()`, `right_join()` to merge `mpg_df3` and `mpg_df4` by columns
 
 
 
-## reshape data
+## Reshape data
 convert the data to long/wide format using function `pivot_longer()` and `pivot_wider()`in tidyr
 ```{r}
 mpg_df4_long = pivot_longer(mpg_df4, cols = c("hwy", "cty"), names_to = "type", values_to = "mile_per_gallon")
@@ -141,31 +227,62 @@ mpg_df4_long
 Exercise, try to convert the `mpg_df4_long` to the wide format
 
 
-## summarize the data by groups 
-use pipe to chain the functions
+## Group & Summarize 
+group by manufacturer and year, and compute the mean of `hwy` and `cty`
+```{r}
+mpg_group = group_by(mpg, year, manufacturer)
+mpg_summary = summarise(mpg_group, hwy_mean = mean(hwy), cty_mean = mean(cty))
+mpg_summary
+```
+
+
+
+
+## Pipe
+use pipe to chain the functions together
 ```{r}
 mpg %>% group_by(year, manufacturer) %>% 
   summarise(hwy_mean = mean(hwy), cty_mean = mean(cty))
 ```
 
+**Exercise** select the observation that has the smallest `cty` for each year.
 
-# Getting start with ggplot
-## build ggplot layer by layer
+
+
+# Aesthetic mapping
 ```{r}
-base = ggplot(mpg, aes(hwy, displ))
-```
-
-we can use `$` to check what's inside the base (ggplot object)
-```{r}
-print(names(base))
-```
-
-
-```{r}
-base
+base = ggplot(mpg, aes(displ, hwy, colour =class))
 base + geom_point()
-base + geom_point(aes(colour = drv))
-base + geom_point(aes(colour = drv)) + geom_smooth(method = "lm") 
-base + geom_point(aes(colour = drv)) + geom_smooth(method = "lm") + theme_minimal()
 ```
+
+## add, override, or remove mappings
+```{r}
+## add mapping
+base + geom_point(aes(shape  = drv))
+
+## override mapping
+base + geom_point(aes(colour = drv))
+
+## remove mapping
+base + geom_point(aes(colour = NULL))
+```
+
+## transformaiton in mapping
+```{r}
+ggplot(mpg) + geom_point(aes(x = displ, y = hwy, colour = class))
+ggplot(mpg) + geom_point(aes(x = log(displ), y = hwy, colour = class))
+```
+
+
+## Aesthetic mapping vs setting
+```{r}
+ggplot(mpg) + geom_point(aes(displ, hwy, colour = "blue"))
+ggplot(mpg) + geom_point(aes(displ, hwy), colour = "blue")
+```
+
+**Exercise**: build a plot that contains the following elements
+- set `hwy` as x axis, and `cty` as `y` axis
+- set point shapes and color according to `cyl`
+- set theme as `theme_bw()`
+- add title `scatter plot` and subtitle `cty.vs.hwy`
 
