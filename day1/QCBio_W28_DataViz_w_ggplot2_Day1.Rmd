@@ -251,12 +251,18 @@ mpg %>% group_by(year, manufacturer) %>%
 
 # Aesthetic mapping
 ```{r}
-base = ggplot(mpg, aes(displ, hwy, colour =class))
-base + geom_point()
+base = ggplot(data = mpg)
+base + geom_point(aes(x = displ, y = hwy, color = drv))
+base + geom_point(aes(x = displ, y = hwy, size  = drv))
+base + geom_point(aes(x = displ, y = hwy, alpha = drv))
+base + geom_point(aes(x = displ, y = hwy, shape = drv))
 ```
 
 ## add, override, or remove mappings
 ```{r}
+base = ggplot(mpg, aes(displ, hwy, colour =class))
+base + geom_point()
+
 ## add mapping
 base + geom_point(aes(shape  = drv))
 
@@ -285,4 +291,7 @@ ggplot(mpg) + geom_point(aes(displ, hwy), colour = "blue")
 - set point shapes and color according to `cyl`
 - set theme as `theme_bw()`
 - add title `scatter plot` and subtitle `cty.vs.hwy`
+
+> Hint: the variable types matter!
+
 

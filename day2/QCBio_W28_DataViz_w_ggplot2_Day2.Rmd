@@ -1,0 +1,467 @@
+---
+title: 'Day2: Building a plot layer by layer'
+author: "Wenbin Guo"
+date: "2023-02-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Beginning remarks
+## Day2 outline
+For today's workshop practice, we will cover the following topics
+- Exploring geometric objects 
+- Learning to use of scale to set customized color
+- Utilizing facets effectively to display data
+- Navigating the coordinate system
+
+
+# load library
+```{r}
+library(tidyverse)
+
+data(mpg)
+```
+
+# layers
+```{r}
+base = ggplot(mpg) 
+
+base
+base + aes(displ, hwy)
+
+base + layer(mapping = aes(displ, hwy), geom = "point", stat = "identity", position = "identity")
+base + geom_point(aes(displ, hwy))
+```
+
+
+# geometry
+## basic types
+### blank
+```{r}
+base + geom_blank()
+```
+
+
+### lines
+```{r}
+df = data.frame(x1 = c(1), y1 = c(20), x2 = c(3), y2 = c(30))
+df2= data.frame(x = c(1,2,2.5,3,3.5,4), y = c(18,22, 36, 25, 20, 40))
+
+# vline, hline, abline
+base + aes(displ, hwy) + 
+  geom_vline(xintercept = 3) +
+  geom_hline(yintercept = 25) 
+
+base + aes(displ, hwy) + 
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "blue") 
+
+
+
+# curve + segment
+base + aes(displ, hwy) + 
+  geom_curve(data = df, aes(x = x1, y = y1, xend = x2, yend = y2, colour = "curve"), 
+             curvature = 0.2, arrow = arrow(length = unit(0.03, "npc"))) +
+  geom_segment(data = df, aes(x = x1, y = y1, xend = x2, yend = y2, colour = "segment"))
+
+
+# line vs path 
+base + aes(displ, hwy) + 
+  geom_point() +
+  geom_line()
+
+base + aes(displ, hwy) + 
+  geom_path()
+```
+
+**Exercise**: for `geom_curve` how to control the curved direction? (e.g. convex -> concave)
+
+**Exercise**: plot the barplot for each class where bar height is the mean of hwy of each group
+
+
+
+### region
+```{r}
+base + aes(displ, hwy) + 
+  geom_rect(data = df, mapping = aes(xmin = x1, xmax = x2, ymin = y1, ymax = y2), 
+            alpha = 0.5, inherit.aes = FALSE)
+
+base + aes(displ, hwy) + 
+  geom_polygon(data = df2, mapping = aes(x =x, y = y), inherit.aes = FALSE)
+```
+
+
+## single variable
+### bar plot
+```{r}
+base + geom_bar(aes(x = class))
+```
+
+**Exercise**: plot the barplot in ascending order (bar height increases from left to right)
+
+
+### histogram
+```{r}
+base + geom_histogram(aes(x = hwy))
+base + geom_histogram(aes(x = hwy), binwidth = 5)
+```
+
+
+### freqpoly
+```{r}
+base + geom_freqpoly(aes(x = hwy))
+```
+
+
+### density
+```{r}
+base + geom_density(aes(x = hwy))
+```
+
+
+### dotplot
+```{r}
+base + geom_dotplot(aes(x = hwy))
+```
+
+
+## two variables
+### scatter plot
+```{r}
+base + geom_point(aes(x = displ, y =hwy))
+```
+
+### smooth 
+```{r}
+base + 
+  geom_point(aes(x = displ, y =hwy)) + 
+  geom_smooth(aes(x = displ, y =hwy), method = "lm")
+
+base + 
+  geom_point(aes(x = displ, y =hwy)) + 
+  geom_smooth(aes(x = displ, y =hwy), method = "loess")
+
+base + 
+  geom_point(aes(x = displ, y =hwy)) + 
+  geom_smooth(aes(x = displ, y =hwy), method = "loess") +
+  geom_rug(aes(x = displ, y =hwy))
+```
+
+### barplot
+```{r}
+base + 
+  geom_bar(aes(x = drv, y =hwy), stat = "identity")
+```
+
+### boxplot
+```{r}
+ggplot(mpg) +
+  geom_boxplot(aes(x = drv, y = hwy)) 
+```
+
+### violin plot
+```{r}
+ggplot(mpg) +
+  geom_violin(aes(x = drv, y = hwy))
+```
+
+### jitter
+```{r}
+ggplot(mpg) +
+  geom_point(aes(x = drv, y = hwy)) +
+  geom_boxplot(aes(x = drv, y = hwy))
+
+ggplot(mpg) +
+  geom_point(aes(x = drv, y = hwy), position = "jitter") +
+  geom_boxplot(aes(x = drv, y = hwy))
+```
+
+### 2d density
+```{r}
+ggplot(mpg) +
+  geom_hex(aes(x = displ, y = hwy)) 
+```
+
+
+### error bar and point range
+```{r}
+y <- c(18, 11, 16)
+df <- data.frame(x = 1:3, y = y, se = c(1.2, 0.5, 1.0))
+
+p <- ggplot(df, aes(x, y, ymin = y - se, ymax = y + se))
+p + geom_crossbar()
+p + geom_pointrange()
+```
+## three variables
+### contour 
+```{r}
+data(faithfuld)
+
+ggplot(faithfuld, aes(waiting, eruptions, z = density)) +
+  geom_contour()
+
+ggplot(faithfuld, aes(waiting, eruptions, z = density)) +
+  geom_contour_filled()
+```
+
+
+### heatmap (using geom_tile)
+```{r}
+ht_data  = expand.grid(X = 1:10, Y = 1:10)
+ht_data$Value = runif(100, min = 1, max = 100)
+
+ggplot(ht_data) + 
+  geom_tile(aes(x = X, y = Y, fill = Value))
+```
+
+Note: There are more specialized packages such as `pheatmap`, `complexHeatmap`, `ggheatmap` that can be used to make fancy heatmaps
+
+
+# position adjustment
+## points
+```{r}
+base + geom_point(aes(drv, hwy))
+```
+
+```{r}
+base + geom_point(aes(drv, hwy), position = "jitter")
+base + geom_point(aes(drv, hwy), position = position_jitter())
+base + geom_point(aes(drv, hwy), position = position_jitter(seed = 42))
+```
+
+## bar plot
+```{r}
+# stack
+base + geom_bar(aes(manufacturer, hwy, fill = drv), position = position_stack(), stat = "identity")
+
+# fill 
+base + geom_bar(aes(manufacturer, hwy, fill = drv), position = position_fill(), stat = "identity")
+
+# dodge
+base + geom_bar(aes(manufacturer, hwy, fill = drv), position = position_dodge(), stat = "identity")
+```
+
+**Exercise**: change the position adjustment to be identity, what will you find?
+
+
+# scale
+**Exercise**: make the following boxplot to have color "red", "blue", "green"
+```{r}
+ggplot(mpg) +
+  geom_point(aes(x = drv, y = hwy), position = "jitter") +
+  geom_boxplot(aes(x = drv, y = hwy))
+```
+
+
+# facet
+```{r}
+base = ggplot(data = mpg)
+base + geom_point(aes(displ, hwy, colour = drv)) + facet_null()
+
+base + geom_point(aes(displ, hwy, colour = drv)) + facet_wrap(~class)
+
+base + geom_point(aes(displ, hwy, colour = drv)) + facet_wrap(~class, scales = "free_x")
+
+base + geom_point(aes(displ, hwy, colour = drv)) + facet_grid(year~class, scales = "free")
+```
+
+### facet with missing
+```{r}
+df1 <- data.frame(x = 1:3, y = 1:3, gender = c("f", "f", "m"))
+df2 <- data.frame(x = 2, y = 2)
+
+ggplot(df1, aes(x, y)) + 
+  geom_point(data = df2, colour = "red", size = 2) + 
+  geom_point() + 
+  facet_wrap(~gender)
+```
+
+
+# coordinates
+## linear
+### zoom in
+```{r}
+base <- ggplot(mpg, aes(displ, hwy)) + 
+  geom_point() + 
+  geom_smooth()
+
+base
+```
+
+```{r}
+base + scale_x_continuous(limits = c(4, 6))
+```
+
+```{r}
+base + coord_cartesian(xlim = c(4, 6))
+```
+
+
+### flipping axes
+```{r}
+ggplot(mpg, aes(displ, cty)) + 
+  geom_point() + 
+  geom_smooth()
+
+ggplot(mpg, aes(cty, displ)) + 
+  geom_point() + 
+  geom_smooth()
+
+ggplot(mpg, aes(displ, cty)) + 
+  geom_point() + 
+  geom_smooth() + 
+  coord_flip()
+```
+
+### fixed ratio
+```{r}
+ggplot(mpg, aes(displ, cty)) + 
+  geom_point() + 
+  geom_smooth() 
+
+ggplot(mpg, aes(displ, cty)) + 
+  geom_point() + 
+  geom_smooth() +
+  coord_fixed(ratio = 0.2)
+```
+
+
+
+## nonlinear
+### transofmration
+```{r}
+base <- ggplot(diamonds, aes(carat, price)) + 
+  stat_bin2d() + 
+  geom_smooth(method = "lm") + 
+  xlab(NULL) + 
+  ylab(NULL) + 
+  theme(legend.position = "none")
+base
+
+# Better fit on log scale, but harder to interpret
+base +
+  scale_x_log10() + 
+  scale_y_log10()
+
+# Fit on log scale, then backtransform to original.
+# Highlights lack of expensive diamonds with large carats
+pow10 <- scales::exp_trans(10)
+base +
+  scale_x_log10() + 
+  scale_y_log10() + 
+  coord_trans(x = pow10, y = pow10)
+```
+
+### polar coordinates
+```{r}
+base <- ggplot(mtcars, aes(factor(1), fill = factor(cyl))) +
+  geom_bar(width = 1) + 
+  theme(legend.position = "none") + 
+  scale_x_discrete(NULL, expand = c(0, 0)) +
+  scale_y_continuous(NULL, expand = c(0, 0))
+
+# Stacked barchart
+base
+
+# Pie chart
+base + coord_polar(theta = "y")
+
+# The bullseye chart
+base + coord_polar()
+```
+
+
+# Valentine's special
+## generate heart curve
+**Exercise**: generate a heart curve using ggplot2 and assign the plot into a variable `heart`
+```{r}
+
+```
+
+## save into image
+```{r}
+myheart_png = "./myheart.png"
+ggsave(heart, filename = myheart_png)
+```
+
+
+## modify the image
+let's add some arts to the creation
+```{r}
+if(!require(brickr)){
+   remotes::install_github("ryantimpe/brickr")
+}
+if(!require(png)){
+   install.packages("png")
+}
+if(!require(animation)){
+   install.packages("animation")
+}
+library(brickr)
+library(png)
+library(animation)
+```
+
+```{r}
+img_mosaic = readPNG(myheart_png) %>%
+  image_to_mosaic() 
+```
+
+```{r}
+img_mosaic %>%
+  build_mosaic()
+```
+
+```{r}
+build = img_mosaic %>%
+  build_instructions(num_steps = 6)
+
+build
+```
+
+## extract subplots
+```{r}
+s1 = build
+s1$data = s1$data %>% dplyr::filter(Step == "Step 01") 
+s1 = s1 + scale_x_continuous(limits=c(0,50)) + scale_y_continuous(limits=c(0,50))
+
+s2 = build
+s2$data = s2$data %>% dplyr::filter(Step == "Step 02") 
+s2 = s2 + scale_x_continuous(limits=c(0,50)) + scale_y_continuous(limits=c(0,50))
+
+s3 = build
+s3$data = s3$data %>% dplyr::filter(Step == "Step 03") 
+s3 = s3 + scale_x_continuous(limits=c(0,50)) + scale_y_continuous(limits=c(0,50))
+
+
+s4 = build
+s4$data = s4$data %>% dplyr::filter(Step == "Step 04") 
+s4 = s4 + scale_x_continuous(limits=c(0,50)) + scale_y_continuous(limits=c(0,50))
+
+s5 = build
+s5$data = s5$data %>% dplyr::filter(Step == "Step 05") 
+s5 = s5 + scale_x_continuous(limits=c(0,50)) + scale_y_continuous(limits=c(0,50))
+
+s6 = build
+s6$data = s6$data %>% dplyr::filter(Step == "Step 06") 
+s6 = s6 + scale_x_continuous(limits=c(0,50)) + scale_y_continuous(limits=c(0,50))
+```
+
+
+## save into a gif
+```{r}
+animation::saveGIF(
+  expr = {
+    plot(s1)
+    plot(s2)
+    plot(s3)
+    plot(s4)
+    plot(s5)
+    plot(s6)
+  },
+  movie.name = "explicit_my3.gif"
+)
+```
