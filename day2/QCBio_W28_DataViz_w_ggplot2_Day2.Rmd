@@ -11,7 +11,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 # Beginning remarks
-## Day2 outline
+The following material is the exercise for Day2 workshop
+
+## outline
 For today's workshop practice, we will cover the following topics
 - Exploring geometric objects 
 - Learning to use of scale to set customized color
@@ -26,13 +28,17 @@ library(tidyverse)
 data(mpg)
 ```
 
+
 # layers
 ```{r}
 base = ggplot(mpg) 
 
 base
 base + aes(displ, hwy)
+```
 
+
+```{r}
 base + layer(mapping = aes(displ, hwy), geom = "point", stat = "identity", position = "identity")
 base + geom_point(aes(displ, hwy))
 ```
@@ -42,15 +48,13 @@ base + geom_point(aes(displ, hwy))
 ## basic types
 ### blank
 ```{r}
+base 
 base + geom_blank()
 ```
 
 
 ### lines
 ```{r}
-df = data.frame(x1 = c(1), y1 = c(20), x2 = c(3), y2 = c(30))
-df2= data.frame(x = c(1,2,2.5,3,3.5,4), y = c(18,22, 36, 25, 20, 40))
-
 # vline, hline, abline
 base + aes(displ, hwy) + 
   geom_vline(xintercept = 3) +
@@ -58,16 +62,19 @@ base + aes(displ, hwy) +
 
 base + aes(displ, hwy) + 
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "blue") 
+```
 
-
+```{r}
+df = data.frame(x1 = c(1), y1 = c(20), x2 = c(3), y2 = c(30))
 
 # curve + segment
 base + aes(displ, hwy) + 
   geom_curve(data = df, aes(x = x1, y = y1, xend = x2, yend = y2, colour = "curve"), 
              curvature = 0.2, arrow = arrow(length = unit(0.03, "npc"))) +
   geom_segment(data = df, aes(x = x1, y = y1, xend = x2, yend = y2, colour = "segment"))
+```
 
-
+```{r}
 # line vs path 
 base + aes(displ, hwy) + 
   geom_point() +
@@ -77,6 +84,8 @@ base + aes(displ, hwy) +
   geom_path()
 ```
 
+
+
 **Exercise**: for `geom_curve` how to control the curved direction? (e.g. convex -> concave)
 
 **Exercise**: plot the barplot for each class where bar height is the mean of hwy of each group
@@ -85,6 +94,8 @@ base + aes(displ, hwy) +
 
 ### region
 ```{r}
+df2= data.frame(x = c(1,2,2.5,3,3.5,4), y = c(18,22, 36, 25, 20, 40))
+
 base + aes(displ, hwy) + 
   geom_rect(data = df, mapping = aes(xmin = x1, xmax = x2, ymin = y1, ymax = y2), 
             alpha = 0.5, inherit.aes = FALSE)
@@ -106,26 +117,23 @@ base + geom_bar(aes(x = class))
 ### histogram
 ```{r}
 base + geom_histogram(aes(x = hwy))
+# control the number of bins
 base + geom_histogram(aes(x = hwy), binwidth = 5)
 ```
 
 
-### freqpoly
+### other options
 ```{r}
+# freqpoly
 base + geom_freqpoly(aes(x = hwy))
-```
 
-
-### density
-```{r}
+# density
 base + geom_density(aes(x = hwy))
-```
 
-
-### dotplot
-```{r}
+# dotplot
 base + geom_dotplot(aes(x = hwy))
 ```
+
 
 
 ## two variables
@@ -158,42 +166,29 @@ base +
 
 ### boxplot
 ```{r}
-ggplot(mpg) +
-  geom_boxplot(aes(x = drv, y = hwy)) 
+base + geom_boxplot(aes(x = drv, y = hwy)) 
 ```
 
 ### violin plot
 ```{r}
-ggplot(mpg) +
-  geom_violin(aes(x = drv, y = hwy))
+base + geom_violin(aes(x = drv, y = hwy))
 ```
 
-### jitter
-```{r}
-ggplot(mpg) +
-  geom_point(aes(x = drv, y = hwy)) +
-  geom_boxplot(aes(x = drv, y = hwy))
-
-ggplot(mpg) +
-  geom_point(aes(x = drv, y = hwy), position = "jitter") +
-  geom_boxplot(aes(x = drv, y = hwy))
-```
 
 ### 2d density
 ```{r}
-ggplot(mpg) +
-  geom_hex(aes(x = displ, y = hwy)) 
+base + geom_hex(aes(x = displ, y = hwy)) 
 ```
 
 
 ### error bar and point range
 ```{r}
-y <- c(18, 11, 16)
-df <- data.frame(x = 1:3, y = y, se = c(1.2, 0.5, 1.0))
+df3 <- data.frame(x = 1:3, y = c(18, 11, 16), se = c(1.2, 0.5, 1.0))
 
-p <- ggplot(df, aes(x, y, ymin = y - se, ymax = y + se))
-p + geom_crossbar()
-p + geom_pointrange()
+ggplot(df3, aes(x, y, ymin = y - se, ymax = y + se)) +
+  geom_crossbar()
+ggplot(df3, aes(x, y, ymin = y - se, ymax = y + se)) +
+  geom_pointrange()
 ```
 ## three variables
 ### contour 
@@ -206,7 +201,6 @@ ggplot(faithfuld, aes(waiting, eruptions, z = density)) +
 ggplot(faithfuld, aes(waiting, eruptions, z = density)) +
   geom_contour_filled()
 ```
-
 
 ### heatmap (using geom_tile)
 ```{r}
@@ -257,6 +251,7 @@ ggplot(mpg) +
 
 
 # facet
+## facet_wrap & facet_grid
 ```{r}
 base = ggplot(data = mpg)
 base + geom_point(aes(displ, hwy, colour = drv)) + facet_null()
@@ -268,13 +263,13 @@ base + geom_point(aes(displ, hwy, colour = drv)) + facet_wrap(~class, scales = "
 base + geom_point(aes(displ, hwy, colour = drv)) + facet_grid(year~class, scales = "free")
 ```
 
-### facet with missing
+## facet with missing
 ```{r}
-df1 <- data.frame(x = 1:3, y = 1:3, gender = c("f", "f", "m"))
-df2 <- data.frame(x = 2, y = 2)
+df4 <- data.frame(x = 1:3, y = 1:3, gender = c("f", "f", "m"))
+df5 <- data.frame(x = 2, y = 2)
 
-ggplot(df1, aes(x, y)) + 
-  geom_point(data = df2, colour = "red", size = 2) + 
+ggplot(df4, aes(x, y)) + 
+  geom_point(data = df5, colour = "red", size = 2) + 
   geom_point() + 
   facet_wrap(~gender)
 ```
@@ -293,12 +288,14 @@ base
 
 ```{r}
 base + scale_x_continuous(limits = c(4, 6))
-```
-
-```{r}
 base + coord_cartesian(xlim = c(4, 6))
 ```
 
+### fixed ratio
+```{r}
+base
+base + coord_fixed(ratio = 0.2)
+```
 
 ### flipping axes
 ```{r}
@@ -316,19 +313,6 @@ ggplot(mpg, aes(displ, cty)) +
   coord_flip()
 ```
 
-### fixed ratio
-```{r}
-ggplot(mpg, aes(displ, cty)) + 
-  geom_point() + 
-  geom_smooth() 
-
-ggplot(mpg, aes(displ, cty)) + 
-  geom_point() + 
-  geom_smooth() +
-  coord_fixed(ratio = 0.2)
-```
-
-
 
 ## nonlinear
 ### transofmration
@@ -341,10 +325,12 @@ base <- ggplot(diamonds, aes(carat, price)) +
   theme(legend.position = "none")
 base
 
+
 # Better fit on log scale, but harder to interpret
 base +
   scale_x_log10() + 
   scale_y_log10()
+
 
 # Fit on log scale, then backtransform to original.
 # Highlights lack of expensive diamonds with large carats
@@ -376,9 +362,23 @@ base + coord_polar()
 
 # Valentine's special
 ## generate heart curve
-**Exercise**: generate a heart curve using ggplot2 and assign the plot into a variable `heart`
-```{r}
+```{r, echo=FALSE, fig.cap="A caption", out.width = '100%'}
+knitr::include_graphics("https://mathworld.wolfram.com/images/eps-svg/HeartCurves_901.png")
+```
 
+
+**Exercise**: generate a heart curve using ggplot2 and assign the plot into a variable `heart`
+
+```{r, fig.height=4, fig.width=4}
+dat <- data.frame(t = seq(0, 2*pi, by = 0.01))
+x <- function(t) 16 * sin(t)^3
+y <- function(t) 13*cos(t) - 5*cos(2*t) - 2*cos(3*t) - cos(4*t)
+dat$y <- y(dat$t)
+dat$x <- x(dat$t)
+heart <- ggplot(dat, aes(x,y)) +  
+  geom_polygon(fill = "red", col = "firebrick", alpha = 0.9) +  theme_classic()
+
+heart
 ```
 
 ## save into image
@@ -389,7 +389,7 @@ ggsave(heart, filename = myheart_png)
 
 
 ## modify the image
-let's add some arts to the creation
+let's add some arts to the plot by recreating the plot in lego style
 ```{r}
 if(!require(brickr)){
    remotes::install_github("ryantimpe/brickr")
@@ -406,19 +406,15 @@ library(animation)
 ```
 
 ```{r}
-img_mosaic = readPNG(myheart_png) %>%
-  image_to_mosaic() 
+img_mosaic = readPNG(myheart_png) %>% image_to_mosaic()
 ```
 
 ```{r}
-img_mosaic %>%
-  build_mosaic()
+img_mosaic %>% build_mosaic()
 ```
 
 ```{r}
-build = img_mosaic %>%
-  build_instructions(num_steps = 6)
-
+build = img_mosaic %>% build_instructions(num_steps = 6)
 build
 ```
 
@@ -436,7 +432,6 @@ s3 = build
 s3$data = s3$data %>% dplyr::filter(Step == "Step 03") 
 s3 = s3 + scale_x_continuous(limits=c(0,50)) + scale_y_continuous(limits=c(0,50))
 
-
 s4 = build
 s4$data = s4$data %>% dplyr::filter(Step == "Step 04") 
 s4 = s4 + scale_x_continuous(limits=c(0,50)) + scale_y_continuous(limits=c(0,50))
@@ -449,7 +444,6 @@ s6 = build
 s6$data = s6$data %>% dplyr::filter(Step == "Step 06") 
 s6 = s6 + scale_x_continuous(limits=c(0,50)) + scale_y_continuous(limits=c(0,50))
 ```
-
 
 ## save into a gif
 ```{r}
@@ -465,3 +459,35 @@ animation::saveGIF(
   movie.name = "explicit_my3.gif"
 )
 ```
+
+```{r}
+library(ggplot2)
+
+# Data for plotting
+tissues <- c("whole blood", "cord blood", "blood leukocyte", "PBMC", 
+             "CD4+ T cell", "placenta", "lung", "tumor tissue", "saliva")
+publications <- c(350, 100, 80, 70, 60, 50, 40, 30, 20)
+
+# Create a data frame
+data <- data.frame(tissues, publications)
+
+# Create a ggplot2 bar chart
+ggplot(data, aes(x=reorder(tissues, -publications), y=publications, fill=tissues)) +
+  geom_bar(stat="identity") +
+  theme_minimal() +
+  theme(
+    text = element_text(colour = "white"),
+    plot.background = element_rect(fill = "black", color = NA),
+    panel.background = element_rect(fill = "black", color = NA),
+    axis.title = element_text(color = "white"),
+    axis.text = element_text(color = "white"),
+    legend.position = "none"
+  ) +
+  labs(
+    title = "TOP 10 tissues",
+    x = "Tissues",
+    y = "Number of publications"
+  ) +
+  scale_fill_manual(values=rep("darkred", length(tissues)))
+```
+

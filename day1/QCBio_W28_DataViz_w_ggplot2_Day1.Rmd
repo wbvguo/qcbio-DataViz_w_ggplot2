@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Hello everyone, welcome to the `QCBio workshop W28: "Advanced Data Visualization with ggplot2"`
+Hello everyone, welcome to the QCBio workshop W28: `Advanced Data Visualization with ggplot2`
 
 # Beginning Remarks
 In today’s fast-paced research environment, the ability to communicate complex data effectively is invaluable. ggplot2, a powerful package in R, stands out for its versatility and capacity to create aesthetically pleasing and complex visualizations with ease. This workshop is designed to help you enhance data visualization skills using ggplot2 and enabling you to craft and tailor plots that effectively communicate your research findings.
