@@ -456,10 +456,12 @@ animation::saveGIF(
     plot(s5)
     plot(s6)
   },
-  movie.name = "explicit_my3.gif"
+  movie.name = "myheart.gif"
 )
 ```
 
+
+# Example: `chatgpt` to generate a plot
 ```{r}
 library(ggplot2)
 

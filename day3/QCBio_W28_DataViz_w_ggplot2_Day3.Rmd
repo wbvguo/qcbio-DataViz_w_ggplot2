@@ -1,7 +1,7 @@
 ---
 title: 'Day3: Examples and useful packages'
 author: "Wenbin Guo"
-date: "2023-11-05"
+date: "2024-02-15"
 output: html_document
 ---
 
@@ -138,15 +138,22 @@ plot1 + theme(plot.background = element_rect(fill = "linen"),
 
 # practical examples
 ## scatter plot
-try to reproduce the `scatter_plot.png` figure using dataset `midwest`
+try to reproduce the `example_scatter_plot.png` figure using dataset `midwest`
+
+```{r, echo=FALSE, fig.cap="A caption", out.width = '100%'}
+knitr::include_graphics("example_scatter_plot.png")
+```
 
 ```{r}
 
 ```
 
 
-## boxplot + dotplot
-try to reproduce the `density.png` figure using dataset `mpg`
+## density plot
+try to reproduce the `example_density.png` figure using dataset `mpg`
+```{r, echo=FALSE, fig.cap="A caption", out.width = '100%'}
+knitr::include_graphics("example_density.png")
+```
 
 ```{r}
 
