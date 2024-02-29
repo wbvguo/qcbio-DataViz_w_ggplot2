@@ -461,7 +461,7 @@ animation::saveGIF(
 ```
 
 
-# Example: `chatgpt` to generate a plot
+# Example: use `chatgpt` to generate a plot
 ```{r}
 library(ggplot2)
 
