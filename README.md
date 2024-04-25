@@ -1,7 +1,7 @@
 
 # UCLA QCBio Collaboratory workshop W28: Advanced Data Visualization with ggplot2
 Author: Wenbin Guo \
-Last Update: 2024 Winter
+Last Update: 2024 Spring
 
 ## Description
 This interactive and hands-on training is tailored for students and researchers eager to delve into the art and science of data visualization. In this workshop, we will use `R` and journey through the essentials of data wrangling with `dplyr`, followed by a deep dive into the powerful `ggplot2` package (https://ggplot2.tidyverse.org/) and its extensions. By the end of the workshop, participants will gain practical experience with the tools and explore the vast possibilities of data visualization in R. Besides mastering the technical skills, attendees will also learn the best practices and key principles for creating efficient and effective visualizations. For registration information, please refer to this [link](https://qcb.ucla.edu/collaboratory/workshops)
