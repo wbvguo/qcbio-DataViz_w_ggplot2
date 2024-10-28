@@ -1,6 +1,6 @@
 # UCLA QCBio Collaboratory workshop W28: Advanced Data Visualization with ggplot2
 Author: Wenbin Guo \
-Last Update: 2024 Spring
+Last Update: 2024 Fall
 
 
 ## Description
