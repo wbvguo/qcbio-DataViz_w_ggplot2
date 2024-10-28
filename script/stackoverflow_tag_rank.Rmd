@@ -1,0 +1,68 @@
+---
+title: "stackoverflow tag rank"
+author: "Wenbin Guo"
+date: "2024-02-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(ggthemes)
+library(ggforce)
+library(lubridate)
+```
+
+
+# collcet data
+```{r}
+posix <- . %>% as.POSIXct(origin = "1970-01-01", tz = "UTC")
+# See http://data.stackexchange.com/stackoverflow/query/560682/complementary-r-tags-in-2016
+df = read_csv("http://data.stackexchange.com/stackoverflow/csv/707591") 
+
+
+df2= df %>% 
+  arrange(creation_year) %>%
+  dplyr::filter(creation_year >= posix("2010-01-01")) %>%
+  group_by(creation_year) %>%
+  mutate(rank = dense_rank(dplyr::desc(num_tags))) %>%
+  group_by(TagName) %>%
+  mutate(best_rank = min(rank)) %>%
+  mutate(last_rank = last(rank)) %>%
+  dplyr::filter(best_rank <= 5) %>% ungroup %>%
+  arrange(last_rank) %>%
+  mutate(TagName = factor(TagName, levels = unique(TagName))) 
+```
+
+
+# plot
+```{r, fig.height=8, fig.width=12}
+df2 %>%
+  ggplot(aes(x = creation_year, y = rank,
+             colour = factor(TagName),
+             group = factor(TagName))) +
+  geom_line(size = 1) +
+  geom_point(size = 3) +
+  scale_y_continuous(trans = trans_reverser('log10'), breaks = c(seq_len(10), 15, 20, 30)) +
+  scale_x_datetime(breaks = c(seq(from = ymd_hms('2010-01-01 00:00:00'), 
+                                  to = ymd_hms('2024-01-01 00:00:00'), 
+                                  by = '5 years'), ymd_hms('2024-01-01 00:00:00')), date_labels = "%Y") +
+  scale_color_brewer(palette = "Paired", name = "Tag name") + 
+  #scale_color_hc(name = "[tag]\nby last rank") +
+  theme_light(base_size = 20) +
+  coord_cartesian(ylim = c(30, 1)) +
+  ylab("Rank") +
+  xlab("Year") +
+  ggtitle("[R] StackOverflow Tags") +
+  theme(legend.title = element_text(size = 16),
+        legend.text = element_text(size = 16),
+        axis.text.y = element_text(size = 15))
+```
+
+
