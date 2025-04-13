@@ -47,5 +47,5 @@ Participants should have basic knowledge and experience with R programming. Fami
 
 <br/>
 
-<img src="./slides/qcb-logo.png" width="215" height="100">
+<img src="./slides/UCLA_QCBio-logo.png" width="215" height="100">
 
